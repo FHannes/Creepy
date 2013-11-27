@@ -7,7 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="antlr-runtime-3.4" level="project" />
+    <orderEntry type="module" module-name="Creepy" />
     <orderEntry type="library" name="sqljet-1.1.8" level="project" />
   </component>
 </module>

@@ -7,3 +7,6 @@
 
 # Binary Files #
 out/*
+
+# IDE Files #
+.idea/workspace.xml
