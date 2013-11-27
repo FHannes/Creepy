@@ -7,7 +7,7 @@ import static junit.framework.Assert.assertEquals;
 
 /**
  */
-public class UtilsTest {
+public class URLUtilsTest {
 
     @Test
     public void testNormalizeURL_EmptyString() {
@@ -16,7 +16,7 @@ public class UtilsTest {
 
     @Test
     public void testNormalizeURL_InvalidURL() {
-        assertEquals("", URLUtils.normalizeURL("http:/test.com"));
+        assertEquals("", URLUtils.normalizeURL("http:/example.com"));
     }
 
     @Test
@@ -26,7 +26,7 @@ public class UtilsTest {
 
     @Test
     public void testNormalizeURL_Params() {
-        assertEquals("", URLUtils.normalizeURL("http://EXamPlE.cOm/index.php?test=value"));
+        assertEquals("", URLUtils.normalizeURL("http://example.com/index.php?test=value"));
     }
 
 }
