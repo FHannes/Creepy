@@ -40,10 +40,16 @@ public class Creepy {
         super.finalize();
     }
 
+    /**
+     * Adds a new URL to the urls table in the database.
+     *
+     * @param url The given URL identifier
+     * @throws SqlJetException
+     */
     public void addURL(String url) throws SqlJetException {
         db.beginTransaction(SqlJetTransactionMode.WRITE);
         try {
-            db.getTable("urls").insert(url);
+            db.getTable("urls").insert(URLUtils.normalizeURL(url));
         } finally {
             db.commit();
         }
