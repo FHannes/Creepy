@@ -1,8 +1,10 @@
 package net.fhannes.creepy;
 
+import org.tmatesoft.sqljet.core.SqlJetException;
+import org.tmatesoft.sqljet.core.table.SqlJetDb;
+
+import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,18 +14,16 @@ import java.util.regex.Pattern;
 /**
  *
  */
-public class Worker implements Runnable {
+public class CreepyWorker extends CreepyDBAgent implements Runnable {
 
     private static final Pattern pHtmlParse = Pattern.compile("<\\s*a.*?href\\s*=\\s*\"([^\"#?]*).*?\">",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
     private final CreepyURL url;
 
-    private final ICreepyURLEvent evtDeleteURL;
-
-    public Worker(CreepyURL url, ICreepyURLEvent deleteURL) throws MalformedURLException {
+    public CreepyWorker(File dbFile, CreepyURL url) throws SqlJetException {
+        super(dbFile);
         this.url = url;
-        this.evtDeleteURL = deleteURL;
     }
 
     @Override
@@ -31,6 +31,7 @@ public class Worker implements Runnable {
         try {
             URLConnection conn = url.getURL().openConnection();
             if (conn.getContentType().toLowerCase().startsWith("html/text")) {
+                // TODO: Implement html-aware link parser?
                 Matcher matchLinks = pHtmlParse.matcher(conn.getContent().toString());
                 List<CreepyURL> links = new ArrayList<CreepyURL>();
                 while (matchLinks.matches()) {
@@ -42,10 +43,11 @@ public class Worker implements Runnable {
                         newURL = new CreepyURL(link);
                     links.add(newURL);
                 }
-                // TODO: Implement html-aware link parser?
+                //addURLs(links); // TODO: Add list of URLs in single query
+                //updateURL(url); // TODO: Update url timestamp to indicate (last) check
             } else
-                evtDeleteURL.run(url);
-        } catch (IOException e) { }
+                deleteURL(url);
+        } catch (Exception e) { }
     }
 
 }

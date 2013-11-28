@@ -71,7 +71,7 @@ public final class CreepyURL {
     /**
      * Exception thrown when the url is invalid.
      */
-    public class Exception extends java.lang.Exception {
+    public class Exception extends CreepyException {
 
         public Exception() {
             super("Invalid URL");

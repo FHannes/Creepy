@@ -9,12 +9,10 @@ import java.io.File;
 /**
  *
  */
-public class Creepy {
-
-    private SqlJetDb db;
+public class Creepy extends CreepyDBAgent {
 
     public Creepy(File file) throws SqlJetException {
-        db = SqlJetDb.open(file, true);
+        super(file);
         db.getOptions().setAutovacuum(true);
 
         db.beginTransaction(SqlJetTransactionMode.WRITE);
@@ -40,20 +38,6 @@ public class Creepy {
         super.finalize();
     }
 
-    /**
-     * Adds a new URL to the urls table in the database.
-     *
-     * @param url The given URL identifier
-     * @throws SqlJetException
-     */
-    public void addURL(CreepyURL url) throws SqlJetException {
-        if (!url.isValid())
-            return; // TODO: Throw exception or ignore?
-        db.beginTransaction(SqlJetTransactionMode.WRITE);
-        try {
-            db.getTable("urls").insert(url.toString());
-        } finally {
-            db.commit();
-        }
-    }
+
+
 }
