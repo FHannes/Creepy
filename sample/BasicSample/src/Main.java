@@ -7,6 +7,7 @@ public class Main {
 
     public static void main(String[] args) throws SqlJetException {
         Creepy crawly = new Creepy(new File(args[0]));
+        crawly.addURL("http://www.google.com");
     }
 
 }

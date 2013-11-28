@@ -22,7 +22,7 @@ public class Creepy {
             db.createTable("CREATE TABLE IF NOT EXISTS urls (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                     "url STRING NOT NULL," +
-                    "last DATETIME DEFAULT CURRENT_TIMESTAMP)");
+                    "last DATETIME DEFAULT NULL)");
             db.createIndex("CREATE INDEX url_idx ON urls(url)");
             db.createTable("CREATE TABLE IF NOT EXISTS links (" +
                     "source INTEGER," +
@@ -38,5 +38,14 @@ public class Creepy {
     protected void finalize() throws Throwable {
         db.close();
         super.finalize();
+    }
+
+    public void addURL(String url) throws SqlJetException {
+        db.beginTransaction(SqlJetTransactionMode.WRITE);
+        try {
+            db.getTable("urls").insert(url);
+        } finally {
+            db.commit();
+        }
     }
 }
