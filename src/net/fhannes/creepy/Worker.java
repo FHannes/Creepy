@@ -15,26 +15,24 @@ public class Worker implements Runnable {
     private static final Pattern pHtmlParse = Pattern.compile("<\\s*a.*?href\\s*=\\s*\"([^\"#?]*).*?\">",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
-    private final String urlStr;
-    private final URL url;
+    private final CreepyURL url;
 
     private final ICreepyURLEvent evtDeleteURL;
 
-    public Worker(String url, ICreepyURLEvent deleteURL) throws MalformedURLException {
-        this.urlStr = url;
-        this.url = new URL(url);
+    public Worker(CreepyURL url, ICreepyURLEvent deleteURL) throws MalformedURLException {
+        this.url = url;
         this.evtDeleteURL = deleteURL;
     }
 
     @Override
     public void run() {
         try {
-            URLConnection conn = url.openConnection();
+            URLConnection conn = url.getURL().openConnection();
             if (conn.getContentType().toLowerCase().startsWith("html/text")) {
                 Matcher matchLinks = pHtmlParse.matcher(conn.getContent().toString());
                 // TODO: Implement html-aware link parser?
             } else
-                evtDeleteURL.run(urlStr);
+                evtDeleteURL.run(url);
         } catch (IOException e) { }
     }
 

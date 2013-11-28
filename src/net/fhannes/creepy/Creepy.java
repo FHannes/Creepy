@@ -46,10 +46,12 @@ public class Creepy {
      * @param url The given URL identifier
      * @throws SqlJetException
      */
-    public void addURL(String url) throws SqlJetException {
+    public void addURL(CreepyURL url) throws SqlJetException {
+        if (!url.isValid())
+            return; // TODO: Throw exception or ignore?
         db.beginTransaction(SqlJetTransactionMode.WRITE);
         try {
-            db.getTable("urls").insert(URLUtils.normalizeURL(url));
+            db.getTable("urls").insert(url.toString());
         } finally {
             db.commit();
         }
