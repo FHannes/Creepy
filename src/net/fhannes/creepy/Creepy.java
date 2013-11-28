@@ -38,6 +38,8 @@ public class Creepy extends CreepyDBAgent {
         super.finalize();
     }
 
+    public void process(int maxLinks) {
 
+    }
 
 }

@@ -43,7 +43,7 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                         newURL = new CreepyURL(link);
                     links.add(newURL);
                 }
-                //addURLs(links); // TODO: Add list of URLs in single query
+                addURL(links);
                 //updateURL(url); // TODO: Update url timestamp to indicate (last) check
             } else
                 deleteURL(url);
