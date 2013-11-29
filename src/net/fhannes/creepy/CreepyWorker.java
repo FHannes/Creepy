@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
  */
 public class CreepyWorker extends CreepyDBAgent implements Runnable {
 
-    private static final Pattern pHtmlParse = Pattern.compile("<\\s*a.*?href\\s*=\\s*\"([^\"#?]*).*?\">",
-            Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern pHtmlParse = Pattern.compile("<\\s*a.*?href[^=]*=[^\"]*\"(?!javascript)([^\"#?]*)[^\"]*\">",
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
     private final CreepyURL url;
 
