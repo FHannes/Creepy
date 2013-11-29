@@ -1,10 +1,7 @@
 package net.fhannes.creepy;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,11 +111,14 @@ public class CreepyDBAgent {
         try {
             StringBuilder sql = new StringBuilder("SELECT url FROM urls WHERE last IS NULL ORDER BY id ASC LIMIT ").
                     append(maxCount);
-            stmt.executeUpdate(sql.toString());
+            ResultSet rs = stmt.executeQuery(sql.toString());
+            while (rs.next())
+                list.add(new CreepyURL(rs.getString(0)));
         } finally {
             stmt.close();
             db.commit();
         }
+        return list;
     }
 
 }
