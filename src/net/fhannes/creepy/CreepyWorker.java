@@ -49,6 +49,7 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                         links.add(newURL);
                     }
                     addURL(links);
+                    // TODO: Add links between urls
                     updateLastCheck(url);
                 } finally {
                     br.close();

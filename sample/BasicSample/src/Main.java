@@ -7,11 +7,12 @@ import java.sql.SQLException;
 
 public class Main {
 
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, InterruptedException {
         Creepy crawly = new Creepy(new File(args[0]));
-        crawly.addURL(new CreepyURL("http://www.google.com"));
-        CreepyWorker worker = new CreepyWorker(new File(args[0]), new CreepyURL("http://www.google.com"));
-        worker.run();
+        crawly.addURL(new CreepyURL("http://www.scar-divi.com"));
+        crawly.process(100);
+        crawly.process(100);
+        crawly.process(100);
     }
 
 }

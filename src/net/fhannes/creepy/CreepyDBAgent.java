@@ -10,12 +10,14 @@ import java.util.List;
  */
 public class CreepyDBAgent {
 
+    protected final File dbFile;
     protected final Connection db;
 
     public CreepyDBAgent(File dbFile) throws ClassNotFoundException, SQLException {
         Class.forName("org.sqlite.JDBC");
-        db = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
-        db.setAutoCommit(false);
+        this.dbFile = dbFile;
+        this.db = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
+        this.db.setAutoCommit(false);
     }
 
     @Override
@@ -111,7 +113,7 @@ public class CreepyDBAgent {
                     append(maxCount);
             ResultSet rs = stmt.executeQuery(sql.toString());
             while (rs.next())
-                list.add(new CreepyURL(rs.getString(0)));
+                list.add(new CreepyURL(rs.getString(1)));
         } finally {
             stmt.close();
             db.commit();
