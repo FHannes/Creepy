@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
  */
 public class CreepyWorker extends CreepyDBAgent implements Runnable {
 
-    private static final Pattern pHtmlParse = Pattern.compile("<\\s*a.*?href[^=]*=[^\"]*\"(?!javascript)([^\"#?]*)[^\"]*\">",
-            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern pHtmlParse = Pattern.compile("<a(?:[^>](?<!href=\"))+?href=\"(?!javascript|mailto)([^\"#?]+)[^>]+>.+?</a>",
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
     private final CreepyURL url;
 
@@ -35,8 +35,9 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                 try {
                     StringBuilder buffer = new StringBuilder(1048576);
                     char[] data = new char[4096];
-                    while (br.read(data) != -1)
-                        buffer.append(data);
+                    int len;
+                    while ((len = br.read(data)) != -1)
+                        buffer.append(data, 0, len);
                     Matcher matchLinks = pHtmlParse.matcher(buffer.toString());
                     List<CreepyURL> links = new ArrayList<CreepyURL>();
                     while (matchLinks.find()) {
@@ -46,7 +47,8 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                             newURL = url.makeRelative(link);
                         else
                             newURL = new CreepyURL(link);
-                        links.add(newURL);
+                        if (newURL.isValid())
+                            links.add(newURL);
                     }
                     addURL(links);
                     // TODO: Add links between urls
