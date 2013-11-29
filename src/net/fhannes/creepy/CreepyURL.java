@@ -12,7 +12,7 @@ public final class CreepyURL {
 
     public CreepyURL(String url) {
         try {
-            this.url = new URL(url);
+            this.url = new URL(url.replaceFirst("/\\z", ""));
         } catch (MalformedURLException e) {
             this.url = null;
         }
@@ -33,18 +33,17 @@ public final class CreepyURL {
 
     public boolean hasParams() throws Exception {
         if (url == null)
-            throw new Exception();
+            throw new Exception("Invalid URL argument");
         return url.getQuery() != null;
     }
 
-    // TODO: Handle invalid relPath data
-    public CreepyURL makeRelative(String relPath) {
+    public CreepyURL makeRelative(String relPath) throws Exception {
+        if (!isRelative(relPath))
+            throw new Exception("Path argument is not relative");
         relPath = relPath.replaceFirst("\\A\\.?/", "");
         String path = url.getPath();
-        int index;
-        if ((index = path.lastIndexOf('/')) != -1)
-            path = path.substring(0, index);
         while (relPath.startsWith("../")) {
+            int index;
             if ((index = path.lastIndexOf('/')) != -1)
                 path = path.substring(0, index);
             else
@@ -67,15 +66,11 @@ public final class CreepyURL {
         return url.matches("(?s)\\A\\.{0,2}/.*");
     }
 
-    /**
-     * Exception thrown when the url is invalid.
-     */
     public class Exception extends CreepyException {
 
-        public Exception() {
-            super("Invalid URL");
+        public Exception(String message) {
+            super(message);
         }
-
     }
 
 }
