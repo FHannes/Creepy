@@ -1,11 +1,8 @@
 package net.fhannes.creepy;
 
-import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.table.SqlJetDb;
-
 import java.io.File;
-import java.io.IOException;
 import java.net.URLConnection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -21,7 +18,7 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
 
     private final CreepyURL url;
 
-    public CreepyWorker(File dbFile, CreepyURL url) throws SqlJetException {
+    public CreepyWorker(File dbFile, CreepyURL url) throws SQLException, ClassNotFoundException {
         super(dbFile);
         this.url = url;
     }

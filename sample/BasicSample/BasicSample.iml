@@ -8,7 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Creepy" />
-    <orderEntry type="library" name="sqljet-1.1.8" level="project" />
   </component>
 </module>
 

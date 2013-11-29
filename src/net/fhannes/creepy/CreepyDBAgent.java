@@ -1,11 +1,10 @@
 package net.fhannes.creepy;
 
-import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
-import org.tmatesoft.sqljet.core.table.ISqlJetTable;
-import org.tmatesoft.sqljet.core.table.SqlJetDb;
-
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -13,25 +12,34 @@ import java.util.List;
  */
 public class CreepyDBAgent {
 
-    protected final SqlJetDb db;
+    protected final Connection db;
 
-    public CreepyDBAgent(File dbFile) throws SqlJetException {
-        db = SqlJetDb.open(dbFile, true);
+    public CreepyDBAgent(File dbFile) throws ClassNotFoundException, SQLException {
+        Class.forName("org.sqlite.JDBC");
+        db = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
+        db.setAutoCommit(false);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        db.close();
+        super.finalize();
     }
 
     /**
      * Adds a new URL to the urls table in the database.
      *
      * @param url The given URL identifier
-     * @throws org.tmatesoft.sqljet.core.SqlJetException
      */
-    public void addURL(CreepyURL url) throws SqlJetException {
+    public void addURL(CreepyURL url) throws SQLException {
         if (!url.isValid())
             return; // TODO: Throw exception or ignore?
-        db.beginTransaction(SqlJetTransactionMode.WRITE);
+        Statement stmt = db.createStatement();
         try {
-            db.getTable("urls").insert(url.toString());
+            StringBuilder sql = new StringBuilder("INSERT INTO urls (url) VALUES ('").append(url).append("')");
+            stmt.executeUpdate(sql.toString());
         } finally {
+            stmt.close();
             db.commit();
         }
     }
@@ -40,18 +48,23 @@ public class CreepyDBAgent {
      * Adds new URLs to the urls table in the database.
      *
      * @param urls The given list of URL identifier
-     * @throws org.tmatesoft.sqljet.core.SqlJetException
      */
-    public void addURL(List<CreepyURL> urls) throws SqlJetException {
-        db.beginTransaction(SqlJetTransactionMode.WRITE);
+    public void addURL(List<CreepyURL> urls) throws SQLException {
+        Statement stmt = db.createStatement();
         try {
-            ISqlJetTable table = db.getTable("urls");
+            StringBuilder sql = new StringBuilder("INSERT INTO urls (url) VALUES ");
+            boolean first = true;
             for (CreepyURL url : urls) {
                 if (!url.isValid())
                     continue;
-                table.insert(url.toString());
+                if (!first)
+                    sql.append(',');
+                sql.append("('").append(url.toString()).append("')");
+                first = false;
             }
+            stmt.executeUpdate(sql.toString());
         } finally {
+            stmt.close();
             db.commit();
         }
     }
@@ -60,15 +73,16 @@ public class CreepyDBAgent {
      * Deletes an URL from the urls table in the database.
      *
      * @param url The given URL identifier
-     * @throws org.tmatesoft.sqljet.core.SqlJetException
      */
-    public void deleteURL(CreepyURL url) throws SqlJetException {
+    public void deleteURL(CreepyURL url) throws SQLException {
         if (!url.isValid())
             return; // TODO: Throw exception or ignore?
-        db.beginTransaction(SqlJetTransactionMode.WRITE);
+        Statement stmt = db.createStatement();
         try {
-            db.getTable("urls").lookup("url", url.toString()).delete();
+            StringBuilder sql = new StringBuilder("DELETE FROM urls WHERE url = '").append(url.toString()).append('\'');
+            stmt.executeUpdate(sql.toString());
         } finally {
+            stmt.close();
             db.commit();
         }
     }

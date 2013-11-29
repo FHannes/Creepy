@@ -1,45 +1,45 @@
 package net.fhannes.creepy;
 
-import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
-import org.tmatesoft.sqljet.core.table.SqlJetDb;
-
 import java.io.File;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
  */
 public class Creepy extends CreepyDBAgent {
 
-    public Creepy(File file) throws SqlJetException {
-        super(file);
-        db.getOptions().setAutovacuum(true);
+    private final ExecutorService threads;
 
-        db.beginTransaction(SqlJetTransactionMode.WRITE);
+    public Creepy(File file) throws SQLException, ClassNotFoundException {
+        this(file, Runtime.getRuntime().availableProcessors());
+    }
+
+    public Creepy(File file, int threadCount) throws SQLException, ClassNotFoundException {
+        super(file);
+
+        Statement stmt = db.createStatement();
         try {
-            db.createTable("CREATE TABLE IF NOT EXISTS urls (" +
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS urls (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                    "url STRING NOT NULL," +
+                    "url STRING NOT NULL UNIQUE," +
                     "last DATETIME DEFAULT NULL)");
-            db.createIndex("CREATE INDEX url_idx ON urls(url)");
-            db.createTable("CREATE TABLE IF NOT EXISTS links (" +
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS links (" +
                     "source INTEGER," +
                     "target INTEGER," +
                     "FOREIGN KEY (source) REFERENCES urls(id)," +
                     "FOREIGN KEY (target) REFERENCES urls(id))");
         } finally {
+            stmt.close();
             db.commit();
         }
-    }
 
-    @Override
-    protected void finalize() throws Throwable {
-        db.close();
-        super.finalize();
+        threads = Executors.newFixedThreadPool(threadCount);
     }
 
     public void process(int maxLinks) {
-
     }
 
 }
