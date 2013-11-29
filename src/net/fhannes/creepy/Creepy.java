@@ -3,6 +3,7 @@ package net.fhannes.creepy;
 import java.io.File;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,7 +40,8 @@ public class Creepy extends CreepyDBAgent {
         threads = Executors.newFixedThreadPool(threadCount);
     }
 
-    public void process(int maxLinks) {
+    public void process(int maxLinks) throws SQLException {
+        List<CreepyURL> list = getURLs(maxLinks);
     }
 
 }

@@ -103,10 +103,8 @@ public class CreepyDBAgent {
         }
     }
 
-    public List<CreepyURL> getURLs(CreepyURL url, int maxCount) throws SQLException {
+    public List<CreepyURL> getURLs(int maxCount) throws SQLException {
         List<CreepyURL> list = new ArrayList<CreepyURL>();
-        if (!url.isValid())
-            return list;
         Statement stmt = db.createStatement();
         try {
             StringBuilder sql = new StringBuilder("SELECT url FROM urls WHERE last IS NULL ORDER BY id ASC LIMIT ").
