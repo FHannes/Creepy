@@ -36,7 +36,7 @@ public class CreepyDBAgent {
             return;
         Statement stmt = db.createStatement();
         try {
-            StringBuilder sql = new StringBuilder("INSERT INTO urls (url) VALUES ('").append(url).append("')");
+            StringBuilder sql = new StringBuilder("INSERT OR IGNORE INTO urls (url) VALUES ('").append(url).append("')");
             stmt.executeUpdate(sql.toString());
         } finally {
             stmt.close();
@@ -55,7 +55,7 @@ public class CreepyDBAgent {
             for (CreepyURL url : urls) {
                 if (!url.isValid())
                     continue;
-                StringBuilder sql = new StringBuilder("INSERT INTO urls (url) VALUES ('").append(url).append("')");
+                StringBuilder sql = new StringBuilder("INSERT OR IGNORE INTO urls (url) VALUES ('").append(url).append("')");
                 stmt.executeUpdate(sql.toString());
             }
         } finally {
