@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,6 +31,7 @@ public class CreepyDBAgent {
      * Adds a new URL to the urls table in the database.
      *
      * @param url The given URL identifier
+     * @throws SQLException
      */
     public void addURL(CreepyURL url) throws SQLException {
         if (!url.isValid())
@@ -48,6 +50,7 @@ public class CreepyDBAgent {
      * Adds new URLs to the urls table in the database.
      *
      * @param urls The given list of URL identifier
+     * @throws SQLException
      */
     public void addURL(List<CreepyURL> urls) throws SQLException {
         Statement stmt = db.createStatement();
@@ -68,6 +71,7 @@ public class CreepyDBAgent {
      * Deletes an URL from the urls table in the database.
      *
      * @param url The given URL identifier
+     * @throws SQLException
      */
     public void deleteURL(CreepyURL url) throws SQLException {
         if (!url.isValid())
@@ -82,6 +86,12 @@ public class CreepyDBAgent {
         }
     }
 
+    /**
+     * Updates the timestamp of a url in the database.
+     *
+     * @param url The given URL identifier
+     * @throws SQLException
+     */
     public void updateLastCheck(CreepyURL url) throws SQLException {
         if (!url.isValid())
             return;
@@ -89,6 +99,21 @@ public class CreepyDBAgent {
         try {
             StringBuilder sql = new StringBuilder("UPDATE urls SET last = CURRENT_TIMESTAMP WHERE url = '").
                     append(url.toString()).append('\'');
+            stmt.executeUpdate(sql.toString());
+        } finally {
+            stmt.close();
+            db.commit();
+        }
+    }
+
+    public List<CreepyURL> getURLs(CreepyURL url, int maxCount) throws SQLException {
+        List<CreepyURL> list = new ArrayList<CreepyURL>();
+        if (!url.isValid())
+            return list;
+        Statement stmt = db.createStatement();
+        try {
+            StringBuilder sql = new StringBuilder("SELECT url FROM urls WHERE last IS NULL ORDER BY id ASC LIMIT ").
+                    append(maxCount);
             stmt.executeUpdate(sql.toString());
         } finally {
             stmt.close();
