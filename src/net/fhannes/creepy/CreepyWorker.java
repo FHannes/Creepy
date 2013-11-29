@@ -49,7 +49,7 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                         links.add(newURL);
                     }
                     addURL(links);
-                    //updateURL(url); // TODO: Update url timestamp to indicate (last) check
+                    updateLastCheck(url);
                 } finally {
                     br.close();
                 }

@@ -71,10 +71,24 @@ public class CreepyDBAgent {
      */
     public void deleteURL(CreepyURL url) throws SQLException {
         if (!url.isValid())
-            return; // TODO: Throw exception or ignore?
+            return;
         Statement stmt = db.createStatement();
         try {
             StringBuilder sql = new StringBuilder("DELETE FROM urls WHERE url = '").append(url.toString()).append('\'');
+            stmt.executeUpdate(sql.toString());
+        } finally {
+            stmt.close();
+            db.commit();
+        }
+    }
+
+    public void updateLastCheck(CreepyURL url) throws SQLException {
+        if (!url.isValid())
+            return;
+        Statement stmt = db.createStatement();
+        try {
+            StringBuilder sql = new StringBuilder("UPDATE urls SET last = CURRENT_TIMESTAMP WHERE url = '").
+                    append(url.toString()).append('\'');
             stmt.executeUpdate(sql.toString());
         } finally {
             stmt.close();
