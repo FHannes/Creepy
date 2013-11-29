@@ -1,6 +1,8 @@
 package net.fhannes.creepy;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.URLConnection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,21 +29,30 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
     public void run() {
         try {
             URLConnection conn = url.getURL().openConnection();
-            if (conn.getContentType().toLowerCase().startsWith("html/text")) {
+            if (conn.getContentType().toLowerCase().startsWith("text/html")) {
                 // TODO: Implement html-aware link parser?
-                Matcher matchLinks = pHtmlParse.matcher(conn.getContent().toString());
-                List<CreepyURL> links = new ArrayList<CreepyURL>();
-                while (matchLinks.matches()) {
-                    String link = matchLinks.group(1);
-                    CreepyURL newURL = null;
-                    if (CreepyURL.isRelative(link))
-                        newURL = url.makeRelative(link);
-                    else
-                        newURL = new CreepyURL(link);
-                    links.add(newURL);
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                try {
+                    StringBuilder buffer = new StringBuilder(1048576);
+                    char[] data = new char[4096];
+                    while (br.read(data) != -1)
+                        buffer.append(data);
+                    Matcher matchLinks = pHtmlParse.matcher(buffer.toString());
+                    List<CreepyURL> links = new ArrayList<CreepyURL>();
+                    while (matchLinks.find()) {
+                        String link = matchLinks.group(1);
+                        CreepyURL newURL = null;
+                        if (CreepyURL.isRelative(link))
+                            newURL = url.makeRelative(link);
+                        else
+                            newURL = new CreepyURL(link);
+                        links.add(newURL);
+                    }
+                    addURL(links);
+                    //updateURL(url); // TODO: Update url timestamp to indicate (last) check
+                } finally {
+                    br.close();
                 }
-                addURL(links);
-                //updateURL(url); // TODO: Update url timestamp to indicate (last) check
             } else
                 deleteURL(url);
         } catch (Exception e) { }

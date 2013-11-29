@@ -33,7 +33,7 @@ public class CreepyDBAgent {
      */
     public void addURL(CreepyURL url) throws SQLException {
         if (!url.isValid())
-            return; // TODO: Throw exception or ignore?
+            return;
         Statement stmt = db.createStatement();
         try {
             StringBuilder sql = new StringBuilder("INSERT INTO urls (url) VALUES ('").append(url).append("')");
@@ -52,17 +52,12 @@ public class CreepyDBAgent {
     public void addURL(List<CreepyURL> urls) throws SQLException {
         Statement stmt = db.createStatement();
         try {
-            StringBuilder sql = new StringBuilder("INSERT INTO urls (url) VALUES ");
-            boolean first = true;
             for (CreepyURL url : urls) {
                 if (!url.isValid())
                     continue;
-                if (!first)
-                    sql.append(',');
-                sql.append("('").append(url.toString()).append("')");
-                first = false;
+                StringBuilder sql = new StringBuilder("INSERT INTO urls (url) VALUES ('").append(url).append("')");
+                stmt.executeUpdate(sql.toString());
             }
-            stmt.executeUpdate(sql.toString());
         } finally {
             stmt.close();
             db.commit();

@@ -39,8 +39,7 @@ public final class CreepyURL {
 
     // TODO: Handle invalid relPath data
     public CreepyURL makeRelative(String relPath) {
-        if (relPath.startsWith("./"))
-            relPath = relPath.substring(2);
+        relPath = relPath.replaceFirst("\\A\\.?/", "");
         String path = url.getPath();
         int index;
         if ((index = path.lastIndexOf('/')) != -1)
@@ -65,7 +64,7 @@ public final class CreepyURL {
     }
 
     public static boolean isRelative(String url) {
-        return url.matches("(?s)\\b\\.\\.?/.*");
+        return url.matches("(?s)\\A\\.{0,2}/.*");
     }
 
     /**
