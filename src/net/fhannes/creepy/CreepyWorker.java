@@ -14,15 +14,11 @@ import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 /**
  *
  */
 public class CreepyWorker extends CreepyDBAgent implements Runnable {
-
-    private static final Pattern pHtmlParse = Pattern.compile("<a(?:[^>](?<!href=\"))+?href=\"(?!javascript|mailto)([^\"#?]+)[^>]+>.+?</a>",
-            Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
     private final CloseableHttpClient httpClient;
     private final HttpContext httpContext = HttpClientContext.create();
