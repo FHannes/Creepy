@@ -2,7 +2,6 @@
 *.db3
 
 # Package Files #
-*.jar
 *.war
 *.ear
 
