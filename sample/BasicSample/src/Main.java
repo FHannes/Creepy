@@ -9,7 +9,11 @@ public class Main {
     public static void main(String[] args) throws SQLException, ClassNotFoundException, InterruptedException {
         Creepy crawly = new Creepy(new File(args[0]));
         crawly.addURL(new CreepyURL("http://www.scar-divi.com"));
-        crawly.process();
+        int links = 0;
+        while (true) {
+            links += crawly.process();
+            System.out.println(links);
+        }
     }
 
 }

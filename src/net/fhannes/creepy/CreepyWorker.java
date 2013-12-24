@@ -45,15 +45,11 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                 HttpEntity entity = response.getEntity();
                 if (entity.getContentType().getValue().startsWith("text/html")) {
                     String content = EntityUtils.toString(entity);
-                    Document doc = Jsoup.parse(content);
+                    Document doc = Jsoup.parse(content, job.getURL().toString());
                     Elements links = doc.select("a[href]");
                     for (Element eLink : links) {
-                        String link = eLink.attr("href");
-                        CreepyURL newURL = null;
-                        if (CreepyURL.isRelative(link))
-                            newURL = job.getURL().makeRelative(link);
-                        else
-                            newURL = new CreepyURL(link);
+                        String link = eLink.attr("abs:href");
+                        CreepyURL newURL = new CreepyURL(link);
                         if (newURL.isValid())
                             job.addURL(newURL);
                     }

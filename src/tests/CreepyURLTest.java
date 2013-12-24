@@ -39,39 +39,4 @@ public class CreepyURLTest {
         new CreepyURL("").hasParams();
     }
 
-    @Test
-    public void testMakeRelative1() throws CreepyURL.Exception {
-        assertEquals("http://example.com/test.html", new CreepyURL("http://example.com/test").makeRelative("./test.html").toString());
-    }
-
-    @Test
-    public void testMakeRelative2() throws CreepyURL.Exception {
-        assertEquals("http://example.com/test.html", new CreepyURL("http://example.com/").makeRelative("./test.html").toString());
-    }
-
-    @Test
-    public void testMakeRelative3() throws CreepyURL.Exception {
-        assertNull(new CreepyURL("http://example.com/").makeRelative("../test.html"));
-    }
-
-    @Test
-    public void testMakeRelative4() throws CreepyURL.Exception {
-        assertEquals("http://example.com/test.html", new CreepyURL("http://example.com/folder/old.html").makeRelative("../test.html").toString());
-    }
-
-    @Test
-    public void testMakeRelative5() throws CreepyURL.Exception {
-        assertEquals("http://example.com/folder/test.html", new CreepyURL("http://example.com/folder/old.html").makeRelative("./test.html").toString());
-    }
-
-    @Test
-    public void testMakeRelative6() throws CreepyURL.Exception {
-        assertEquals("http://example.com/test.html", new CreepyURL("http://example.com").makeRelative("./test.html").toString());
-    }
-
-    @Test(expected = CreepyURL.Exception.class)
-    public void testMakeRelative7() throws CreepyURL.Exception {
-        new CreepyURL("http://example.com").makeRelative("http://example.com").toString();
-    }
-
 }
