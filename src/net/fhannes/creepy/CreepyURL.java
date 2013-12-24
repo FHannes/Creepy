@@ -27,6 +27,18 @@ public final class CreepyURL {
                 toString());
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof CreepyURL)
+            return false;
+        return ((CreepyURL) obj).toString().equalsIgnoreCase(toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
     public boolean isValid() {
         return url != null;
     }
@@ -40,22 +52,29 @@ public final class CreepyURL {
     public CreepyURL makeRelative(String relPath) throws Exception {
         if (!isRelative(relPath))
             throw new Exception("Path argument is not relative");
-        relPath = relPath.replaceFirst("\\A\\.?/", "");
-        String path = url.getPath();
-        while (relPath.startsWith("../")) {
-            int index;
-            if ((index = path.lastIndexOf('/')) != -1)
-                path = path.substring(0, index);
-            else
-                return null;
-            relPath = relPath.substring(3);
-        }
-        path = new StringBuilder(path).append('/').append(relPath).toString();
-        return new CreepyURL(new StringBuilder(url.getProtocol().toLowerCase()).
-                append("://").
-                append(url.getHost()).
-                append(path).
-                toString());
+        if (!relPath.startsWith("/")) {
+            relPath = relPath.replaceFirst("\\A\\./", "");
+            String path = url.getPath();
+            while (relPath.startsWith("../")) {
+                int index;
+                if ((index = path.lastIndexOf('/')) != -1)
+                    path = path.substring(0, index);
+                else
+                    return null;
+                relPath = relPath.substring(3);
+            }
+            path = new StringBuilder(path).append('/').append(relPath).toString();
+            return new CreepyURL(new StringBuilder(url.getProtocol().toLowerCase()).
+                    append("://").
+                    append(url.getHost()).
+                    append(path).
+                    toString());
+        } else
+            return new CreepyURL(new StringBuilder(url.getProtocol().toLowerCase()).
+                    append("://").
+                    append(url.getHost()).
+                    append(relPath).
+                    toString());
     }
 
     public URL getURL() {

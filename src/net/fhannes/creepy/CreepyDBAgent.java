@@ -46,27 +46,6 @@ public class CreepyDBAgent {
     }
 
     /**
-     * Adds new URLs to the urls table in the database.
-     *
-     * @param urls The given list of URL identifier
-     * @throws SQLException
-     */
-    public void addURL(List<CreepyURL> urls) throws SQLException {
-        Statement stmt = db.createStatement();
-        try {
-            for (CreepyURL url : urls) {
-                if (!url.isValid())
-                    continue;
-                StringBuilder sql = new StringBuilder("INSERT OR IGNORE INTO urls (url) VALUES ('").append(url).append("')");
-                stmt.executeUpdate(sql.toString());
-            }
-        } finally {
-            stmt.close();
-            db.commit();
-        }
-    }
-
-    /**
      * Deletes an URL from the urls table in the database.
      *
      * @param url The given URL identifier
@@ -77,6 +56,7 @@ public class CreepyDBAgent {
             return;
         Statement stmt = db.createStatement();
         try {
+            System.out.println("Delete: " + url.toString());
             StringBuilder sql = new StringBuilder("DELETE FROM urls WHERE url = '").append(url.toString()).append('\'');
             stmt.executeUpdate(sql.toString());
         } finally {
@@ -105,15 +85,15 @@ public class CreepyDBAgent {
         }
     }
 
-    public List<CreepyURL> getURLs(int maxCount) throws SQLException {
-        List<CreepyURL> list = new ArrayList<CreepyURL>();
+    public List<CreepyJob> makeJobs(int maxCount) throws SQLException {
+        List<CreepyJob> list = new ArrayList<CreepyJob>();
         Statement stmt = db.createStatement();
         try {
-            StringBuilder sql = new StringBuilder("SELECT url FROM urls WHERE last IS NULL ORDER BY id ASC LIMIT ").
+            StringBuilder sql = new StringBuilder("SELECT id, url FROM urls WHERE last IS NULL ORDER BY id ASC LIMIT ").
                     append(maxCount);
             ResultSet rs = stmt.executeQuery(sql.toString());
             while (rs.next())
-                list.add(new CreepyURL(rs.getString(1)));
+                list.add(new CreepyJob(rs.getLong(1), new CreepyURL(rs.getString(2))));
         } finally {
             stmt.close();
             db.commit();

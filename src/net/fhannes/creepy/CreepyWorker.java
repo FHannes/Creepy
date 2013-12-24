@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URLConnection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,47 +16,50 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
     private static final Pattern pHtmlParse = Pattern.compile("<a(?:[^>](?<!href=\"))+?href=\"(?!javascript|mailto)([^\"#?]+)[^>]+>.+?</a>",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
-    private final CreepyURL url;
+    private final CreepyJob job;
 
-    public CreepyWorker(File dbFile, CreepyURL url) throws SQLException, ClassNotFoundException {
+    public CreepyWorker(File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException {
         super(dbFile);
-        this.url = url;
+        this.job = job;
     }
 
     @Override
     public void run() {
         try {
-            URLConnection conn = url.getURL().openConnection();
+            // TODO: How best to handle redirects?
+            URLConnection conn = job.getURL().getURL().openConnection();
             if (conn.getContentType().toLowerCase().startsWith("text/html")) {
                 // TODO: Implement html-aware link parser?
                 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 try {
                     StringBuilder buffer = new StringBuilder(1048576);
-                    char[] data = new char[4096];
+                    char[] data = new char[10240];
                     int len;
                     while ((len = br.read(data)) != -1)
                         buffer.append(data, 0, len);
                     Matcher matchLinks = pHtmlParse.matcher(buffer.toString());
-                    List<CreepyURL> links = new ArrayList<CreepyURL>();
                     while (matchLinks.find()) {
                         String link = matchLinks.group(1);
                         CreepyURL newURL = null;
                         if (CreepyURL.isRelative(link))
-                            newURL = url.makeRelative(link);
+                            newURL = job.getURL().makeRelative(link);
                         else
                             newURL = new CreepyURL(link);
                         if (newURL.isValid())
-                            links.add(newURL);
+                            job.addURL(newURL);
                     }
-                    addURL(links);
+                    job.finish();
                     // TODO: Add links between urls
-                    updateLastCheck(url);
                 } finally {
                     br.close();
                 }
             } else
-                deleteURL(url);
-        } catch (Exception e) { }
+                deleteURL(job.getURL());
+        } catch (Exception e) {
+            try {
+                deleteURL(job.getURL());
+            } catch (SQLException e1) { }
+        }
     }
 
 }
