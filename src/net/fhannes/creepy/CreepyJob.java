@@ -1,5 +1,7 @@
 package net.fhannes.creepy;
 
+import org.apache.commons.validator.routines.UrlValidator;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -7,12 +9,14 @@ import java.util.Set;
 public class CreepyJob {
 
     private final long id;
-    private final CreepyURL url;
+    private final String url;
     private boolean finished = false;
 
-    private final Set<CreepyURL> urls = new HashSet<CreepyURL>();
+    private final Set<String> urls = new HashSet<String>();
 
-    public CreepyJob(long id, CreepyURL url) {
+    private UrlValidator validator = new UrlValidator(new String[] {"http", "https"});
+
+    public CreepyJob(long id, String url) {
         this.id = id;
         this.url = url;
     }
@@ -21,12 +25,13 @@ public class CreepyJob {
         return id;
     }
 
-    public CreepyURL getURL() {
+    public String getURL() {
         return url;
     }
 
-    public void addURL(CreepyURL url) {
-        urls.add(url);
+    public void addURL(String url) {
+        if (validator.isValid(url))
+            urls.add(url);
     }
 
     public void finish() {
@@ -37,7 +42,7 @@ public class CreepyJob {
         return finished;
     }
 
-    public Iterator<CreepyURL> urlIterator() {
+    public Iterator<String> urlIterator() {
         return urls.iterator();
     }
 

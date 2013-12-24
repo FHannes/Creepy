@@ -1,5 +1,6 @@
 package net.fhannes.creepy;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -23,6 +24,7 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
     private final CloseableHttpClient httpClient;
     private final HttpContext httpContext = HttpClientContext.create();
     private final HttpGet httpGet;
+
     private final CreepyJob job;
 
     public CreepyWorker(CloseableHttpClient httpClient, File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException {
@@ -43,12 +45,8 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                     String content = EntityUtils.toString(entity);
                     Document doc = Jsoup.parse(content, job.getURL().toString());
                     Elements links = doc.select("a[href]");
-                    for (Element eLink : links) {
-                        String link = eLink.attr("abs:href");
-                        CreepyURL newURL = new CreepyURL(link);
-                        if (newURL.isValid())
-                            job.addURL(newURL);
-                    }
+                    for (Element eLink : links)
+                        job.addURL(eLink.attr("abs:href"));
                     job.finish();
                     // TODO: Add links between urls
                 } else

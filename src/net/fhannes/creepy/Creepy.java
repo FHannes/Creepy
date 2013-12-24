@@ -5,6 +5,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.io.File;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
@@ -56,31 +57,32 @@ public class Creepy extends CreepyDBAgent {
             threads.execute(new CreepyWorker(httpClient, dbFile, job));
         threads.shutdown();
         threads.awaitTermination(10, TimeUnit.MINUTES);
-        Statement stmt = db.createStatement();
+        PreparedStatement stmtURL = db.prepareStatement("INSERT OR IGNORE INTO urls (url) VALUES (?)");
+        PreparedStatement stmtLink = db.prepareStatement("INSERT OR IGNORE INTO links (source, target) VALUES (?, (SELECT id FROM urls WHERE url = ?))");
+        PreparedStatement updateURL = db.prepareStatement("UPDATE urls SET last = CURRENT_TIMESTAMP WHERE id = ?");
         try {
             for (CreepyJob job : jobs) {
                 if (!job.isFinished())
                     continue;
-                Iterator<CreepyURL> itFoundURLs = job.urlIterator();
+                Iterator<String> itFoundURLs = job.urlIterator();
                 while (itFoundURLs.hasNext()) {
-                    CreepyURL url = itFoundURLs.next();
-                    stmt.executeUpdate(new StringBuilder("INSERT OR IGNORE INTO urls (url) VALUES ('").
-                            append(url).
-                            append("')").
-                            toString());
-                    stmt.executeUpdate(new StringBuilder("INSERT OR IGNORE INTO links (source, target) VALUES (").
-                            append(job.getID()).
-                            append(", (SELECT id FROM urls WHERE url = '").
-                            append(url).
-                            append("'))").
-                            toString());
+                    String url = itFoundURLs.next();
+                    stmtURL.setString(1, url);
+                    stmtURL.addBatch();
+                    stmtLink.setLong(1, job.getID());
+                    stmtLink.setString(2, url);
+                    stmtLink.addBatch();
+                    updateURL.setLong(1, job.getID());
+                    updateURL.addBatch();
                 }
-                stmt.executeUpdate(new StringBuilder("UPDATE urls SET last = CURRENT_TIMESTAMP WHERE id = ").
-                        append(job.getID()).toString());
             }
         } finally {
-            stmt.close();
+            stmtURL.executeBatch();
+            stmtLink.executeBatch();
+            updateURL.executeBatch();
             db.commit();
+            stmtURL.close();
+            stmtLink.close();
         }
         return jobs.size();
     }
