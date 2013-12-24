@@ -56,7 +56,6 @@ public class CreepyDBAgent {
             return;
         Statement stmt = db.createStatement();
         try {
-            System.out.println("Delete: " + url.toString());
             StringBuilder sql = new StringBuilder("DELETE FROM urls WHERE url = '").append(url.toString()).append('\'');
             stmt.executeUpdate(sql.toString());
         } finally {

@@ -1,5 +1,9 @@
 package net.fhannes.creepy;
 
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+
 import java.io.File;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 public class Creepy extends CreepyDBAgent {
 
     private final int threadCount;
+    private PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+    private CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).build();
     private ExecutorService threads;
 
     public Creepy(File file) throws SQLException, ClassNotFoundException {
@@ -47,7 +53,7 @@ public class Creepy extends CreepyDBAgent {
         threads = Executors.newFixedThreadPool(threadCount);
         List<CreepyJob> jobs = makeJobs(100);
         for (CreepyJob job : jobs)
-            threads.execute(new CreepyWorker(dbFile, job));
+            threads.execute(new CreepyWorker(httpClient, dbFile, job));
         threads.shutdown();
         threads.awaitTermination(10, TimeUnit.MINUTES);
         Statement stmt = db.createStatement();

@@ -1,11 +1,19 @@
 package net.fhannes.creepy;
 
-import java.io.BufferedReader;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.File;
-import java.io.InputStreamReader;
-import java.net.URLConnection;
 import java.sql.SQLException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -16,10 +24,15 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
     private static final Pattern pHtmlParse = Pattern.compile("<a(?:[^>](?<!href=\"))+?href=\"(?!javascript|mailto)([^\"#?]+)[^>]+>.+?</a>",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
+    private final CloseableHttpClient httpClient;
+    private final HttpContext httpContext = HttpClientContext.create();
+    private final HttpGet httpGet;
     private final CreepyJob job;
 
-    public CreepyWorker(File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException {
+    public CreepyWorker(CloseableHttpClient httpClient, File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException {
         super(dbFile);
+        this.httpClient = httpClient;
+        this.httpGet = new HttpGet(job.getURL().toString());
         this.job = job;
     }
 
@@ -27,19 +40,15 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
     public void run() {
         try {
             // TODO: How best to handle redirects?
-            URLConnection conn = job.getURL().getURL().openConnection();
-            if (conn.getContentType().toLowerCase().startsWith("text/html")) {
-                // TODO: Implement html-aware link parser?
-                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                try {
-                    StringBuilder buffer = new StringBuilder(1048576);
-                    char[] data = new char[10240];
-                    int len;
-                    while ((len = br.read(data)) != -1)
-                        buffer.append(data, 0, len);
-                    Matcher matchLinks = pHtmlParse.matcher(buffer.toString());
-                    while (matchLinks.find()) {
-                        String link = matchLinks.group(1);
+            CloseableHttpResponse response = httpClient.execute(httpGet, httpContext);
+            try {
+                HttpEntity entity = response.getEntity();
+                if (entity.getContentType().getValue().startsWith("text/html")) {
+                    String content = EntityUtils.toString(entity);
+                    Document doc = Jsoup.parse(content);
+                    Elements links = doc.select("a[href]");
+                    for (Element eLink : links) {
+                        String link = eLink.attr("href");
                         CreepyURL newURL = null;
                         if (CreepyURL.isRelative(link))
                             newURL = job.getURL().makeRelative(link);
@@ -50,11 +59,11 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                     }
                     job.finish();
                     // TODO: Add links between urls
-                } finally {
-                    br.close();
-                }
-            } else
-                deleteURL(job.getURL());
+                } else
+                    deleteURL(job.getURL());
+            } finally {
+                response.close();
+            }
         } catch (Exception e) {
             try {
                 deleteURL(job.getURL());
