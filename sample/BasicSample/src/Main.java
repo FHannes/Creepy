@@ -8,7 +8,7 @@ public class Main {
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException, InterruptedException, MalformedURLException {
         Creepy crawly = new Creepy(new File(args[0]));
-        crawly.addURL("http://www.scar-divi.com");
+        crawly.addURL("http://www.wikipedia.org");
         long time = System.currentTimeMillis();
         int links = 0;
         while (true) {

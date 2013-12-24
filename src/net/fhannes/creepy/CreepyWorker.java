@@ -13,8 +13,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URLEncoder;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.sql.SQLException;
 
 /**
@@ -28,10 +29,17 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
 
     private final CreepyJob job;
 
-    public CreepyWorker(CloseableHttpClient httpClient, File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException, MalformedURLException {
+    public CreepyWorker(CloseableHttpClient httpClient, File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException {
         super(dbFile);
         this.httpClient = httpClient;
-        this.httpGet = new HttpGet(URLEncoder.encode(job.getURL()));
+        URI uri = null;
+        try {
+            URL url = new URL(URLDecoder.decode(job.getURL()));
+            uri = new URI(url.getProtocol(), url.getHost(), url.getPath(), url.getQuery(), null);
+        } catch (Exception e) {
+            // TODO: job failed!
+        }
+        this.httpGet = new HttpGet(uri);
         this.job = job;
     }
 
