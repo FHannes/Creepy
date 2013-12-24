@@ -30,8 +30,11 @@ public class CreepyJob {
     }
 
     public void addURL(String url) {
-        if (validator.isValid(url))
+        if (validator.isValid(url)) {
+            if (url.contains("#"))
+                url = url.substring(0, url.indexOf('#'));
             urls.add(url);
+        }
     }
 
     public void finish() {
