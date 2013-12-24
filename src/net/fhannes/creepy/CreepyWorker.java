@@ -1,6 +1,5 @@
 package net.fhannes.creepy;
 
-import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -14,6 +13,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 
 /**
@@ -27,10 +28,10 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
 
     private final CreepyJob job;
 
-    public CreepyWorker(CloseableHttpClient httpClient, File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException {
+    public CreepyWorker(CloseableHttpClient httpClient, File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException, MalformedURLException {
         super(dbFile);
         this.httpClient = httpClient;
-        this.httpGet = new HttpGet(job.getURL().toString());
+        this.httpGet = new HttpGet(URLEncoder.encode(job.getURL()));
         this.job = job;
     }
 

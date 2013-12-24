@@ -5,6 +5,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -50,7 +51,7 @@ public class Creepy extends CreepyDBAgent {
         }
     }
 
-    public int process() throws SQLException, ClassNotFoundException, InterruptedException {
+    public int process() throws SQLException, ClassNotFoundException, InterruptedException, MalformedURLException {
         threads = Executors.newFixedThreadPool(threadCount);
         List<CreepyJob> jobs = makeJobs(100);
         for (CreepyJob job : jobs)
