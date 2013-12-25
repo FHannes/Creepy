@@ -3,6 +3,8 @@ package net.fhannes.creepy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -49,13 +51,17 @@ public class Creepy extends CreepyDBAgent {
             stmt.close();
             db.commit();
         }
+
+        HttpParams params = httpClient.getParams();
+        HttpConnectionParams.setConnectionTimeout(params, 5000);
+        HttpConnectionParams.setSoTimeout(params, 5000);
     }
 
     public int process() throws SQLException, ClassNotFoundException, InterruptedException, MalformedURLException {
         threads = Executors.newFixedThreadPool(threadCount);
         List<CreepyJob> jobs = makeJobs(100);
         for (CreepyJob job : jobs)
-            threads.execute(new CreepyWorker(httpClient, dbFile, job));
+            threads.submit(new CreepyWorker(httpClient, dbFile, job));
         threads.shutdown();
         threads.awaitTermination(10, TimeUnit.MINUTES);
         PreparedStatement stmtURL = db.prepareStatement("INSERT OR IGNORE INTO urls (url) VALUES (?)");

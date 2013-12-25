@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -34,7 +35,7 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
         this.httpClient = httpClient;
         URI uri = null;
         try {
-            URL url = new URL(URLDecoder.decode(job.getURL()));
+            URL url = new URL(job.getURL());
             uri = new URI(url.getProtocol(), url.getHost(), url.getPath(), url.getQuery(), null);
         } catch (Exception e) {
             // TODO: job failed!
@@ -47,7 +48,12 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
     public void run() {
         try {
             // TODO: How best to handle redirects?
-            CloseableHttpResponse response = httpClient.execute(httpGet, httpContext);
+            CloseableHttpResponse response = null;
+            try {
+                response = httpClient.execute(httpGet, httpContext);
+            } catch (IOException e) {
+                // TODO: Check if timed out
+            }
             try {
                 HttpEntity entity = response.getEntity();
                 if (entity.getContentType().getValue().startsWith("text/html")) {

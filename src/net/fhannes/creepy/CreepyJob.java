@@ -2,6 +2,7 @@ package net.fhannes.creepy;
 
 import org.apache.commons.validator.routines.UrlValidator;
 
+import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -33,7 +34,7 @@ public class CreepyJob {
         if (validator.isValid(url)) {
             if (url.contains("#"))
                 url = url.substring(0, url.indexOf('#'));
-            urls.add(url);
+            urls.add(URLDecoder.decode(url));
         }
     }
 
