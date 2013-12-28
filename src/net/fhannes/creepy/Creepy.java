@@ -43,8 +43,8 @@ public class Creepy extends CreepyDBAgent {
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS links (" +
                     "source INTEGER," +
                     "target INTEGER," +
-                    "FOREIGN KEY (source) REFERENCES urls(id)," +
-                    "FOREIGN KEY (target) REFERENCES urls(id))");
+                    "FOREIGN KEY (source) REFERENCES urls(id) ON DELETE CASCADE," +
+                    "FOREIGN KEY (target) REFERENCES urls(id) ON DELETE CASCADE)");
         } finally {
             stmt.close();
             db.commit();
