@@ -3,8 +3,6 @@ package net.fhannes.creepy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -51,10 +49,6 @@ public class Creepy extends CreepyDBAgent {
             stmt.close();
             db.commit();
         }
-
-        HttpParams params = httpClient.getParams();
-        HttpConnectionParams.setConnectionTimeout(params, 5000);
-        HttpConnectionParams.setSoTimeout(params, 5000);
     }
 
     public int process() throws SQLException, ClassNotFoundException, InterruptedException, MalformedURLException {
@@ -67,26 +61,33 @@ public class Creepy extends CreepyDBAgent {
         PreparedStatement stmtURL = db.prepareStatement("INSERT OR IGNORE INTO urls (url) VALUES (?)");
         PreparedStatement stmtLink = db.prepareStatement("INSERT OR IGNORE INTO links (source, target) VALUES (?, (SELECT id FROM urls WHERE url = ?))");
         PreparedStatement updateURL = db.prepareStatement("UPDATE urls SET last = CURRENT_TIMESTAMP WHERE id = ?");
+        PreparedStatement deleteURL = db.prepareStatement("DELETE FROM urls WHERE id = ?");
         try {
             for (CreepyJob job : jobs) {
                 if (!job.isFinished())
                     continue;
-                Iterator<String> itFoundURLs = job.urlIterator();
-                while (itFoundURLs.hasNext()) {
-                    String url = itFoundURLs.next();
-                    stmtURL.setString(1, url);
-                    stmtURL.addBatch();
-                    stmtLink.setLong(1, job.getID());
-                    stmtLink.setString(2, url);
-                    stmtLink.addBatch();
-                    updateURL.setLong(1, job.getID());
-                    updateURL.addBatch();
+                if (!job.hasFailed()) {
+                    Iterator<String> itFoundURLs = job.urlIterator();
+                    while (itFoundURLs.hasNext()) {
+                        String url = itFoundURLs.next();
+                        stmtURL.setString(1, url);
+                        stmtURL.addBatch();
+                        stmtLink.setLong(1, job.getID());
+                        stmtLink.setString(2, url);
+                        stmtLink.addBatch();
+                        updateURL.setLong(1, job.getID());
+                        updateURL.addBatch();
+                    }
+                } else {
+                    deleteURL.setLong(1, job.getID());
+                    deleteURL.addBatch();
                 }
             }
         } finally {
             stmtURL.executeBatch();
             stmtLink.executeBatch();
             updateURL.executeBatch();
+            deleteURL.executeBatch();
             db.commit();
             stmtURL.close();
             stmtLink.close();

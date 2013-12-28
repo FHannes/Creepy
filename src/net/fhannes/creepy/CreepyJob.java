@@ -12,6 +12,7 @@ public class CreepyJob {
     private final long id;
     private final String url;
     private boolean finished = false;
+    private boolean failed = false;
 
     private final Set<String> urls = new HashSet<String>();
 
@@ -44,6 +45,14 @@ public class CreepyJob {
 
     public boolean isFinished() {
         return finished;
+    }
+
+    public void fail() {
+        failed = true;
+    }
+
+    public boolean hasFailed() {
+        return failed;
     }
 
     public Iterator<String> urlIterator() {

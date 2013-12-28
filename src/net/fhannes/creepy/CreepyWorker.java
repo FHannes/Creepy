@@ -1,6 +1,7 @@
 package net.fhannes.creepy;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -13,10 +14,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.sql.SQLException;
 
 /**
@@ -38,22 +37,25 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
             URL url = new URL(job.getURL());
             uri = new URI(url.getProtocol(), url.getHost(), url.getPath(), url.getQuery(), null);
         } catch (Exception e) {
-            // TODO: job failed!
+            job.fail();
         }
+        RequestConfig requestConfig = RequestConfig.custom().
+                setConnectionRequestTimeout(5000).
+                setConnectTimeout(5000).
+                setSocketTimeout(5000).build();
         this.httpGet = new HttpGet(uri);
+        this.httpGet.setConfig(requestConfig);
         this.job = job;
     }
 
     @Override
     public void run() {
+        if (job.hasFailed())
+            return;
         try {
             // TODO: How best to handle redirects?
             CloseableHttpResponse response = null;
-            try {
-                response = httpClient.execute(httpGet, httpContext);
-            } catch (IOException e) {
-                // TODO: Check if timed out
-            }
+            response = httpClient.execute(httpGet, httpContext);
             try {
                 HttpEntity entity = response.getEntity();
                 if (entity.getContentType().getValue().startsWith("text/html")) {
@@ -63,16 +65,13 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
                     for (Element eLink : links)
                         job.addURL(eLink.attr("abs:href"));
                     job.finish();
-                    // TODO: Add links between urls
                 } else
-                    deleteURL(job.getURL());
+                    job.fail();
             } finally {
                 response.close();
             }
         } catch (Exception e) {
-            try {
-                deleteURL(job.getURL());
-            } catch (SQLException e1) { }
+            job.fail(); // TODO: Handle timeouts?
         }
     }
 
