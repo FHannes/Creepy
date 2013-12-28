@@ -55,7 +55,7 @@ public class Creepy extends CreepyDBAgent {
         threads = Executors.newFixedThreadPool(threadCount);
         List<CreepyJob> jobs = makeJobs(100);
         for (CreepyJob job : jobs)
-            threads.submit(new CreepyWorker(httpClient, dbFile, job));
+            threads.submit(new CreepyWorker(httpClient, job));
         threads.shutdown();
         threads.awaitTermination(10, TimeUnit.MINUTES);
         PreparedStatement stmtURL = db.prepareStatement("INSERT OR IGNORE INTO urls (url) VALUES (?)");

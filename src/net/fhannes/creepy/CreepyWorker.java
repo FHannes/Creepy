@@ -13,15 +13,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.sql.SQLException;
 
 /**
  *
  */
-public class CreepyWorker extends CreepyDBAgent implements Runnable {
+public class CreepyWorker implements Runnable {
 
     private final CloseableHttpClient httpClient;
     private final HttpContext httpContext = HttpClientContext.create();
@@ -29,8 +27,7 @@ public class CreepyWorker extends CreepyDBAgent implements Runnable {
 
     private final CreepyJob job;
 
-    public CreepyWorker(CloseableHttpClient httpClient, File dbFile, CreepyJob job) throws SQLException, ClassNotFoundException {
-        super(dbFile);
+    public CreepyWorker(CloseableHttpClient httpClient, CreepyJob job) {
         this.httpClient = httpClient;
         URI uri = null;
         try {
