@@ -21,34 +21,26 @@ import java.net.URL;
  */
 public class CreepyWorker implements Runnable {
 
+    private final static RequestConfig requestConfig = RequestConfig.custom().
+            setConnectionRequestTimeout(5000).
+            setConnectTimeout(5000).
+            setSocketTimeout(5000).build();
+
     private final CloseableHttpClient httpClient;
     private final HttpContext httpContext = HttpClientContext.create();
-    private final HttpGet httpGet;
+    private URI uri = null;
 
     private final CreepyJob job;
 
     public CreepyWorker(CloseableHttpClient httpClient, CreepyJob job) {
         this.httpClient = httpClient;
-        URI uri = null;
         try {
             URL url = new URL(job.getURL());
             uri = new URI(url.getProtocol(), url.getHost(), url.getPath(), url.getQuery(), null);
         } catch (Exception e) {
             job.fail();
         }
-        RequestConfig requestConfig = RequestConfig.custom().
-                setConnectionRequestTimeout(5000).
-                setConnectTimeout(5000).
-                setSocketTimeout(5000).build();
-        this.httpGet = new HttpGet(uri);
-        this.httpGet.setConfig(requestConfig);
         this.job = job;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        if (httpGet != null)
-            httpGet.releaseConnection();
     }
 
     @Override
@@ -56,6 +48,8 @@ public class CreepyWorker implements Runnable {
         if (job.hasFailed())
             return;
         try {
+            HttpGet httpGet = new HttpGet(uri);
+            httpGet.setConfig(requestConfig);
             // TODO: How best to handle redirects?
             CloseableHttpResponse response = null;
             response = httpClient.execute(httpGet, httpContext);
@@ -73,6 +67,7 @@ public class CreepyWorker implements Runnable {
             } finally {
                 EntityUtils.consume(entity);
                 response.close();
+                httpGet.releaseConnection();
             }
         } catch (Exception e) {
             job.fail(); // TODO: Handle timeouts?

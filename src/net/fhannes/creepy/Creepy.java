@@ -53,7 +53,7 @@ public class Creepy extends CreepyDBAgent {
 
     public int process() throws SQLException, ClassNotFoundException, InterruptedException, MalformedURLException {
         threads = Executors.newFixedThreadPool(threadCount);
-        List<CreepyJob> jobs = makeJobs(100);
+        List<CreepyJob> jobs = makeJobs(threadCount * 3);
         for (CreepyJob job : jobs)
             threads.submit(new CreepyWorker(httpClient, job));
         threads.shutdown();
