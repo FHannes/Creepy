@@ -46,6 +46,12 @@ public class CreepyWorker implements Runnable {
     }
 
     @Override
+    protected void finalize() throws Throwable {
+        if (httpGet != null)
+            httpGet.releaseConnection();
+    }
+
+    @Override
     public void run() {
         if (job.hasFailed())
             return;
@@ -53,8 +59,8 @@ public class CreepyWorker implements Runnable {
             // TODO: How best to handle redirects?
             CloseableHttpResponse response = null;
             response = httpClient.execute(httpGet, httpContext);
+            HttpEntity entity = response.getEntity();
             try {
-                HttpEntity entity = response.getEntity();
                 if (entity.getContentType().getValue().startsWith("text/html")) {
                     String content = EntityUtils.toString(entity);
                     Document doc = Jsoup.parse(content, job.getURL().toString());
@@ -65,6 +71,7 @@ public class CreepyWorker implements Runnable {
                 } else
                     job.fail();
             } finally {
+                EntityUtils.consume(entity);
                 response.close();
             }
         } catch (Exception e) {
