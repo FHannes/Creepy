@@ -44,7 +44,10 @@ public class Creepy extends CreepyDBAgent {
                     "source INTEGER," +
                     "target INTEGER," +
                     "FOREIGN KEY (source) REFERENCES urls(id) ON DELETE CASCADE," +
-                    "FOREIGN KEY (target) REFERENCES urls(id) ON DELETE CASCADE)");
+                    "FOREIGN KEY (target) REFERENCES urls(id) ON DELETE CASCADE," +
+                    "PRIMARY KEY (source ASC, target ASC) ON CONFLICT IGNORE)");
+            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_source ON links (source ASC);");
+            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_target ON links (target ASC);");
         } finally {
             stmt.close();
             db.commit();
@@ -63,10 +66,10 @@ public class Creepy extends CreepyDBAgent {
         PreparedStatement updateURL = db.prepareStatement("UPDATE urls SET last = CURRENT_TIMESTAMP WHERE id = ?");
         PreparedStatement deleteURL = db.prepareStatement("DELETE FROM urls WHERE id = ?");
         try {
-            for (CreepyJob job : jobs) {
-                if (!job.isFinished())
-                    continue;
+            for (CreepyJob job : jobs)
                 if (!job.hasFailed()) {
+                    if (!job.isFinished())
+                        continue;
                     Iterator<String> itFoundURLs = job.urlIterator();
                     while (itFoundURLs.hasNext()) {
                         String url = itFoundURLs.next();
@@ -82,7 +85,6 @@ public class Creepy extends CreepyDBAgent {
                     deleteURL.setLong(1, job.getID());
                     deleteURL.addBatch();
                 }
-            }
         } finally {
             stmtURL.executeBatch();
             stmtLink.executeBatch();
