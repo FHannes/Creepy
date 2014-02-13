@@ -78,9 +78,9 @@ public class Creepy extends CreepyDBAgent {
                         stmtLink.setLong(1, job.getID());
                         stmtLink.setString(2, url);
                         stmtLink.addBatch();
-                        updateURL.setLong(1, job.getID());
-                        updateURL.addBatch();
                     }
+                    updateURL.setLong(1, job.getID());
+                    updateURL.addBatch();
                 } else {
                     deleteURL.setLong(1, job.getID());
                     deleteURL.addBatch();
