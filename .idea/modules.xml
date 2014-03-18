@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/sample/BasicSample/BasicSample.iml" filepath="$PROJECT_DIR$/sample/BasicSample/BasicSample.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sample/Basic/Basic.iml" filepath="$PROJECT_DIR$/sample/Basic/Basic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sample/CountVisitedURLs/CountVisitedURLs.iml" filepath="$PROJECT_DIR$/sample/CountVisitedURLs/CountVisitedURLs.iml" />
       <module fileurl="file://$PROJECT_DIR$/Creepy.iml" filepath="$PROJECT_DIR$/Creepy.iml" />
       <module fileurl="file://$PROJECT_DIR$/export/MatrixMarket/MatrixMarket.iml" filepath="$PROJECT_DIR$/export/MatrixMarket/MatrixMarket.iml" />
     </modules>

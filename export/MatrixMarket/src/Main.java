@@ -45,7 +45,6 @@ public class Main extends CreepyDBAgent {
         try {
             StringBuilder sql = new StringBuilder("SELECT source, target FROM links WHERE (source IN (SELECT id FROM ")
                     .append("urls ORDER BY id ASC LIMIT ").append(urlCount).append(")) ORDER BY source, target");
-            System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql.toString());
             while (rs.next()) {
                 int target = rs.getInt(2);
