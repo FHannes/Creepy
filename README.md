@@ -1,4 +1,4 @@
 Creepy
 ======
 
-A simple modular webcrawler
+A simple webcrawler

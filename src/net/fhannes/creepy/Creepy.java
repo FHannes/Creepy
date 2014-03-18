@@ -34,7 +34,7 @@ public class Creepy extends CreepyDBAgent {
 
         this.threadCount = threadCount;
 
-        Statement stmt = db.createStatement();
+        Statement stmt = getDB().createStatement();
         try {
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS urls (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
@@ -50,7 +50,7 @@ public class Creepy extends CreepyDBAgent {
             stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_target ON links (target ASC);");
         } finally {
             stmt.close();
-            db.commit();
+            getDB().commit();
         }
     }
 
@@ -61,10 +61,10 @@ public class Creepy extends CreepyDBAgent {
             threads.submit(new CreepyWorker(httpClient, job));
         threads.shutdown();
         threads.awaitTermination(10, TimeUnit.MINUTES);
-        PreparedStatement stmtURL = db.prepareStatement("INSERT OR IGNORE INTO urls (url) VALUES (?)");
-        PreparedStatement stmtLink = db.prepareStatement("INSERT OR IGNORE INTO links (source, target) VALUES (?, (SELECT id FROM urls WHERE url = ?))");
-        PreparedStatement updateURL = db.prepareStatement("UPDATE urls SET last = CURRENT_TIMESTAMP WHERE id = ?");
-        PreparedStatement deleteURL = db.prepareStatement("DELETE FROM urls WHERE id = ?");
+        PreparedStatement stmtURL = getDB().prepareStatement("INSERT OR IGNORE INTO urls (url) VALUES (?)");
+        PreparedStatement stmtLink = getDB().prepareStatement("INSERT OR IGNORE INTO links (source, target) VALUES (?, (SELECT id FROM urls WHERE url = ?))");
+        PreparedStatement updateURL = getDB().prepareStatement("UPDATE urls SET last = CURRENT_TIMESTAMP WHERE id = ?");
+        PreparedStatement deleteURL = getDB().prepareStatement("DELETE FROM urls WHERE id = ?");
         try {
             for (CreepyJob job : jobs)
                 if (!job.hasFailed()) {
@@ -90,7 +90,7 @@ public class Creepy extends CreepyDBAgent {
             stmtLink.executeBatch();
             updateURL.executeBatch();
             deleteURL.executeBatch();
-            db.commit();
+            getDB().commit();
             stmtURL.close();
             stmtLink.close();
         }

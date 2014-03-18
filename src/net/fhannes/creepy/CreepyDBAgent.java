@@ -10,14 +10,22 @@ import java.util.List;
  */
 public class CreepyDBAgent {
 
-    protected final File dbFile;
-    protected final Connection db;
+    private final File dbFile;
+    private final Connection db;
 
     public CreepyDBAgent(File dbFile) throws ClassNotFoundException, SQLException {
         Class.forName("org.sqlite.JDBC");
         this.dbFile = dbFile;
         this.db = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
         this.db.setAutoCommit(false);
+    }
+
+    public File getDBFile() {
+        return dbFile;
+    }
+
+    public Connection getDB() {
+        return db;
     }
 
     @Override
