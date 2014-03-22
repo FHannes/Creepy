@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -20,8 +22,11 @@ public class Main extends CreepyDBAgent {
     }
 
     public void export(int urlCount, File matrixFile, File urlsFile) throws SQLException, IOException {
-        Set<Integer> acceptedIDs = new HashSet<>();
+        Map<Integer, Integer> idMap = new HashMap<>();
+        int idx = 0;
 
+        if (urlsFile.exists())
+            urlsFile.delete();
         BufferedWriter urlsWriter = new BufferedWriter(new FileWriter(urlsFile));
         urlsWriter.append(urlCount + "\n");
         Statement stmt = getDB().createStatement();
@@ -30,7 +35,7 @@ public class Main extends CreepyDBAgent {
                     append(urlCount);
             ResultSet rs = stmt.executeQuery(sql.toString());
             while (rs.next()) {
-                acceptedIDs.add(rs.getInt(1));
+                idMap.put(rs.getInt(1), idx++);
                 urlsWriter.append(rs.getString(2) + "\n");
             }
         } finally {
@@ -39,6 +44,8 @@ public class Main extends CreepyDBAgent {
             urlsWriter.close();
         }
 
+        if (matrixFile.exists())
+            matrixFile.delete();
         BufferedWriter marketWriter = new BufferedWriter(new FileWriter(matrixFile));
         marketWriter.append(urlCount + "\n");
         stmt = getDB().createStatement();
@@ -48,8 +55,8 @@ public class Main extends CreepyDBAgent {
             ResultSet rs = stmt.executeQuery(sql.toString());
             while (rs.next()) {
                 int target = rs.getInt(2);
-                if (acceptedIDs.contains(target)) // Workaround because query was too slow
-                    marketWriter.append((rs.getInt(1) - 1) + " " + (target - 1) + "\n");
+                if (idMap.containsKey(target)) // Workaround because query was too slow
+                    marketWriter.append(idMap.get(rs.getInt(1)) + " " + idMap.get(target) + "\n");
             }
         } finally {
             stmt.close();
