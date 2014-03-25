@@ -21,7 +21,7 @@ public class Main extends CreepyDBAgent {
         super(dbFile);
     }
 
-    public void export(int urlCount, File matrixFile, File urlsFile) throws SQLException, IOException {
+    public void export(int urlCount, File matrixFile, File urlsFile, boolean byRow) throws SQLException, IOException {
         Map<Integer, Integer> idMap = new HashMap<>();
         int idx = 0;
 
@@ -51,7 +51,11 @@ public class Main extends CreepyDBAgent {
         stmt = getDB().createStatement();
         try {
             StringBuilder sql = new StringBuilder("SELECT source, target FROM links WHERE (source IN (SELECT id FROM ")
-                    .append("urls ORDER BY id ASC LIMIT ").append(urlCount).append(")) ORDER BY source, target");
+                    .append("urls ORDER BY id ASC LIMIT ").append(urlCount).append(")) ORDER BY ");
+            if (byRow)
+                sql.append("source, target");
+            else
+                sql.append("target, source");
             ResultSet rs = stmt.executeQuery(sql.toString());
             while (rs.next()) {
                 int target = rs.getInt(2);
@@ -66,8 +70,32 @@ public class Main extends CreepyDBAgent {
     }
 
     public static final void main(String[] args) throws SQLException, ClassNotFoundException, IOException {
-        Main prgmExport = new Main(new File(args[0]));
-        prgmExport.export(Integer.parseInt(args[1]), new File(args[2] + "-matrixmarket.txt"), new File(args[2] + "-urls.txt"));
+        String path = null, output = null;
+        int count = 0;
+        boolean byRow = true;
+        for (int idx = 0; idx < args.length; idx++) {
+            String arg = args[idx];
+            switch (arg) {
+                case "-db":
+                    path = args[++idx];
+                    break;
+                case "-out":
+                    output = args[++idx];
+                    break;
+                case "-count":
+                    count = Integer.parseInt(args[++idx]);
+                    break;
+                case "-bycol":
+                    byRow = false;
+                    break;
+            }
+        }
+        if (path == null || output == null || count <= 1) {
+            System.out.println("Params: Main -db PATH -count EXPORT_COUNT -out OUTPUT_NAME [-bycol]");
+            return;
+        }
+        Main prgmExport = new Main(new File(path));
+        prgmExport.export(count, new File(output + "-matrixmarket.txt"), new File(output + "-urls.txt"), byRow);
     }
 
 }
